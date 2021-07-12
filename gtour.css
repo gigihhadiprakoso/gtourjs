@@ -1,0 +1,45 @@
+/**
+* Created by Gigih Hadi Prakoso
+* gtourJS
+*/
+.gtour-overlay{
+    position: fixed;
+    width: 100%;
+    background: rgba(0,0,0,0.1);
+    z-index: 9500;
+    top:0;
+    bottom:0;
+    left:0;
+    transition: all 0.1s ease-out;
+    -webkit-transition: all 0.1s ease-out;
+}
+.gtour-spot-element{
+    z-index:9502;
+    border-radius:4px;
+    position:absolute;
+    box-shadow:rgba(0 0 0 / 0.5) 0 0 0 9999px;
+}
+
+.gtour-tooltip{
+    max-width:350px;
+    min-width: 200px;
+    border-radius: 5px;
+    position: absolute;
+    z-index:9503;
+    background:white;
+}
+
+.gtour-tooltip-header{
+    padding-top:10px;
+    padding-left:10px;
+    padding-right:10px;
+}
+
+.gtour-tooltip-body{
+    padding-left:10px;
+    padding-right:10px;
+}
+
+.gtour-content-tooltip-header{
+    font-weight:700
+}
