@@ -3,7 +3,7 @@
  * 
  */
 
-(function(){
+ (function(){
 
     const idSpotElement = "gtour-spot-element";
 
@@ -98,23 +98,49 @@
 
     const adjustmentTooltip = () => {
         const idContentTooltipHeader = "gtour-content-tooltip-header"
+        const positionTooltip = _this.line[_this.step].position;
 
-        if(document.getElementById(idContentTooltipHeader)===null) document.getElementById(idTooltipHeader).appendChild(createTag('p',idContentTooltipHeader,idContentTooltipHeader))
+        if(document.getElementById(idContentTooltipHeader)===null) {
+            document.getElementById(idTooltipHeader).appendChild(createTag('p',idContentTooltipHeader,idContentTooltipHeader))
+        }
+
         ctHeader = document.getElementById(idContentTooltipHeader)
-        ctHeader.innerHTML = _this.line[_this.step].title
+        ctHeader.innerHTML = _this.line[_this.step].title ? _this.line[_this.step].title : "";
 
         setContentTag("#"+idTooltipBody,_this.line[_this.step].description);
 
         position = getOffsetElement(_this.elem)
-        size = getSizeElement(_this.elem)
+        sizeElement = getSizeElement(_this.elem)
         Object.entries(position).forEach(([key,val]) => {
             position[key] = val.toString()+_this.unit
         })
 
-        var y = parseInt(size.height)+10;
+        sizeTooltip = getSizeElement("."+idTooltip)
+
+        var y;
+        var x;
+        switch (positionTooltip) {
+            case "top":
+                y = parseInt(sizeElement.height)-(parseInt(sizeElement.height)+parseInt(sizeTooltip.height)+10)
+                x = 20;
+                break;
+            case "left":
+                y = parseInt(sizeElement.height)*0.3;
+                x = parseInt(sizeElement.width)-(parseInt(sizeElement.width)+parseInt(sizeTooltip.width)+10);
+                break;
+            case "right":
+                y = parseInt(sizeElement.height)*0.3;
+                x = parseInt(sizeElement.width)+10;
+                break;
+            default:
+                y = parseInt(sizeElement.height)+10;
+                x = 20;
+                break;
+        }
+        
         let styles = {
             ...position,
-            transform: "translate(20px, "+y+"px)"
+            transform: "translate("+x+"px, "+y+"px)"
         }
         applyStyle("#"+idTooltip, styles);
     }
@@ -137,6 +163,11 @@
             } else {
                 self.step++; nextStep.call(self)
             }
+        }
+
+        bClose = document.getElementById("gtour-close");
+        bClose.onclick = function(){
+            exitStep.call(self)
         }
     }
 
@@ -163,8 +194,8 @@
         tooltip.appendChild(createTag('div',idTooltipFooter,idTooltipFooter))
         this.body.appendChild(tooltip);
 
-        document.getElementById(idTooltipHeader).appendChild(createTag('span','gtour-close','pull-right'))
-        setContentTag("#gtour-close","x")
+        document.getElementById(idTooltipHeader).appendChild(createTag('span','gtour-close',''))
+        setContentTag("#gtour-close","&#10006;")
         buildButton()
         adjustmentButton.call(_this)
     }
@@ -218,7 +249,9 @@
     }
 
     window.addEventListener("resize",function(){
-        if(typeof _this.step !== 'undefined') showElement.call(_this)
+        if(typeof _this.step !== 'undefined'){
+            showElement.call(_this)
+        }
     })
 
 }());

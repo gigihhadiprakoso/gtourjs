@@ -41,5 +41,11 @@
 }
 
 .gtour-content-tooltip-header{
-    font-weight:700
+    font-weight:700;
+    margin-top:0;
+}
+
+#gtour-close{
+    float: right!important;
+    cursor: pointer;
 }
