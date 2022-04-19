@@ -171,6 +171,14 @@
         }
     }
 
+    function adjustmentOverlay(){
+        var self = this
+
+        document.getElementById(idOverlay).onclick = function(){
+            exitStep.call(self)
+        };
+    }
+
     const applyStyle = (selector,stylesJSON) => {
         const s = document.querySelector(selector)
         Object.entries(stylesJSON).forEach(([key,val]) => {stylesJSON[key] = val.replace(",","|")})
@@ -180,6 +188,7 @@
 
     function buildOverlay() {
         this.body.appendChild(createTag('div',idOverlay,idOverlay));
+        adjustmentOverlay();
     }
 
     function buildSpot(){
