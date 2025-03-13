@@ -33,15 +33,17 @@
 
 .gtour-tooltip-header {
     padding-top: 20px;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 20px
+}
+
+.gtour-tooltip p {
+    margin-bottom: 0px;
 }
 
 .gtour-tooltip-body {
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding: 15px 20px 12px 20px;
 }
 
 .gtour-content-tooltip-header {
@@ -55,32 +57,37 @@
 }
 
 .gtour-tooltip-footer {
-    padding-bottom: 30px;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .gtour-btn {
     background-color: transparent;
     cursor: pointer;
     border: transparent;
-    /* margin: 4px; */
+    color: black;
 }
 
 .position-left {
-    float: left;
+    /* float: left; */
+    margin-right: auto;
 }
 
 .position-right {
-    float: right;
+    /* float: right; */
+    margin-left: auto
 }
 
 .btn-prev {
-    transform: scale(-1, 1);
+    /* transform: scale(-1, 1);
     -moz-transform: scale(-1, 1);
     -webkit-transform: scale(-1, 1);
     -o-transform: scale(-1, 1);
-    -ms-transform: scale(-1, 1);
+    -ms-transform: scale(-1, 1); */
 }
 
 i {
@@ -88,20 +95,22 @@ i {
 }
 
 .icon-btn-prev::before {
-    content: "\279c";
+    /* content: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+DQogIDxwYXRoIGQ9Ik0xNSA1bC03IDcgNyA3Ii8+DQo8L3N2Zz4=); */
+    content: url('./icon/chevron-left.svg');
+    vertical-align: middle;
 }
 
 .icon-btn-next::before {
-    content: "\279c";
+    /* content: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+DQogIDxwYXRoIGQ9Ik05IDVsNyA3LTcgNyIvPg0KPC9zdmc+DQo=); */
+    mask-image: url('./icon/chevron-right.svg');
+    vertical-align: middle;
 }
 
 .gtour-tooltip-indicators {
-    position: absolute;
-    bottom: 3vh;
-    left: 50%;
-    transform: translateX(-50%);
+    /* position: absolute; */
     display: flex;
     gap: 8px;
+    margin: 0px 15px;
 }
 
 .gtour-tooltip-item-indicators {
@@ -114,5 +123,5 @@ i {
 }
 
 .gtour-tooltip-item-indicators.active {
-    background-color: #e788ff;
+    background-color: #6e6e6e;
 }

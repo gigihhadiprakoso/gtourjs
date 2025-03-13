@@ -19,17 +19,21 @@
     const idBtnNext = "btn-next";
     const idBtnPrev = "btn-prev";
 
-    const PREV = 'Kembali';
-    const NEXT = 'Berikutnya';
-    const DONE = 'Selesai';
+    const PREV = 'Previous';
+    const NEXT = 'Next';
+    const DONE = 'Finish';
+
+    const BOOLEAN = 'boolean'
+    const STRING = 'string';
 
     var _this;
 
-    this.gtourJS = function () {
+    this.gtourJS = function (args) {
         this.body = document.querySelector("body");
         this.line = [{}];
         this.elem;
         this.unit = "px";
+        this.option = setOption(args)
 
         _this = this
     }
@@ -68,9 +72,14 @@
     function showElement() {
         var self = this;
 
-        if (document.getElementById(idSpotElement) === null) buildSpot.call(self);
-        if (document.getElementById(idTooltip) === null) buildTooltip.call(self)
-        if (document.getElementById(idOverlay) === null) buildOverlay.call(self)
+        if (document.getElementById(idSpotElement) === null) 
+            buildSpot.call(self);
+        
+        if (document.getElementById(idTooltip) === null) 
+            buildTooltip.call(self)
+
+        if (document.getElementById(idOverlay) === null) 
+            buildOverlay.call(self)
 
         adjustmentTooltip();
         adjustmentSpot();
@@ -145,6 +154,7 @@
             transform: "translate(" + x + "px, " + y + "px)"
         }
         applyStyle("#" + idTooltip, styles);
+        updateCss('.'+idTooltip, 'color', _this.option.textColor);
     }
 
     function adjustmentButton() {
@@ -153,9 +163,9 @@
         bPrev = document.getElementById(idBtnPrev)
         if (self.step > 0) {
             bPrev.onclick = function () { self.step--; prevStep.call(self) }
-            bPrev.style.display = 'block'
+            bPrev.style.visibility = 'visible'
         } else {
-            bPrev.style.display = 'none'
+            bPrev.style.visibility = 'hidden'
         }
 
         bNext = document.getElementById(idBtnNext)
@@ -167,24 +177,43 @@
             }
         }
 
-        document.querySelectorAll('[id="'+idIndicatorItem+'"]').forEach((item) => {
-            item.classList.remove('active');
-        })
-        console.log(document.querySelectorAll('[id="'+idIndicatorItem+'"]'));
-        document.querySelector('[id="'+idIndicatorItem+'"][data-index="'+ (self.step+1) +'"]').classList.add('active');
+        if(_this.option.indicatorAvailable) {
+            document.querySelectorAll('[id="'+idIndicatorItem+'"]').forEach((item) => {
+                item.classList.remove('active');
+            })
+    
+            document.querySelector('[id="'+idIndicatorItem+'"][data-index="'+ (self.step+1) +'"]').classList.add('active');
+    
+            updateCss('.'+idIndicatorItem+'.active', 'background-color', _this.option.indicatorColorActive);
+            updateCss('.'+idIndicatorItem, 'background-color', _this.option.indicatorColor);
+        }
 
-        bClose = document.getElementById("gtour-close");
-        bClose.onclick = function () {
-            exitStep.call(self)
+        if(_this.option.allowClose) {
+            bClose = document.getElementById("gtour-close");
+            bClose.onclick = function () {
+                if(_this.option.exitConfirmation) {
+                    if(confirm("Are you sure want to exit?") == true)
+                        exitStep.call(self)
+                } else {
+                    exitStep.call(self)
+                }
+            }
         }
     }
 
     function adjustmentOverlay() {
         var self = this
 
-        document.getElementById(idOverlay).onclick = function () {
-            exitStep.call(self)
-        };
+        if(_this.option.allowClose){
+            document.getElementById(idOverlay).onclick = function () {
+                if(_this.option.exitConfirmation) {
+                    if(confirm("Are you sure want to exit?") == true)
+                        exitStep.call(self)
+                } else {
+                    exitStep.call(self)
+                }
+            };
+        }
     }
 
     const applyStyle = (selector, stylesJSON) => {
@@ -211,8 +240,12 @@
         tooltip.appendChild(createTag('div', idTooltipFooter, idTooltipFooter))
         this.body.appendChild(tooltip);
 
-        document.getElementById(idTooltipHeader).appendChild(createTag('span', 'gtour-close', ''))
-        setContentTag("#gtour-close", "&#x2715;")
+        updateCss('.'+idTooltip, 'background-color', _this.option.backgroundColor);
+
+        if(_this.option.allowClose){
+            document.getElementById(idTooltipHeader).appendChild(createTag('span', 'gtour-close', ''))
+            setContentTag("#gtour-close", "&#x2715;")
+        }
         buildButtonFooter()
         adjustmentButton.call(_this)
     }
@@ -221,25 +254,47 @@
         btnNext = createTag('button', idBtnNext, idBtnNext + " gtour-btn position-right")
         btnPrev = createTag('button', idBtnPrev, idBtnPrev + " gtour-btn position-left")
 
+        if(_this.option.buttonLabel) {
+            const label = createTag('span')
+            label.innerHTML = NEXT
+            btnNext.appendChild(label)
+        }
         btnNext.appendChild(createTag('i', 'icon-btn-next', 'icon-btn-next'));
         btnPrev.appendChild(createTag('i', 'icon-btn-prev', 'icon-btn-prev'))
+        if(_this.option.buttonLabel) {
+            const label = createTag('span')
+            label.innerHTML = PREV
+            btnPrev.appendChild(label)
+        }
 
-        var indicators = createTag('div', idIndicator, idIndicator);
-        _this.line.forEach((indicator, idx) => {
-            var itemIndicator = createTag('div', idIndicatorItem, idIndicatorItem);
-            itemIndicator.setAttribute('data-index', idx+1);
-            indicators.appendChild(itemIndicator);
-        })
-
-        document.getElementById(idTooltipFooter).appendChild(indicators)
         document.getElementById(idTooltipFooter).appendChild(btnPrev)
+
+        if(_this.option.indicatorAvailable) {
+            var indicators = createTag('div', idIndicator, idIndicator);
+            _this.line.forEach((indicator, idx) => {
+                var itemIndicator = createTag('div', idIndicatorItem, idIndicatorItem);
+                itemIndicator.setAttribute('data-index', idx+1);
+                indicators.appendChild(itemIndicator);
+            })
+    
+            document.getElementById(idTooltipFooter).appendChild(indicators)
+        }
+
         document.getElementById(idTooltipFooter).appendChild(btnNext)
+
+        if(_this.option.textColor) {
+            updateCss('.gtour-btn', 'color', _this.option.textColor);
+        }
     }
 
     const createTag = (tag, id, cl) => {
-        let newElement = document.createElement(tag);
-        newElement.setAttribute("id", id);
-        newElement.setAttribute("class", cl);
+        let newElement = document.createElement(tag);        
+
+        if(typeof id != 'undefined')
+            newElement.setAttribute("id", id);
+        if (typeof cl != 'undefined')
+            newElement.setAttribute("class", cl);
+        
         return newElement;
     }
 
@@ -271,6 +326,121 @@
 
     function isDone(currentStep) {
         return currentStep >= this.line.length - 1;
+    }
+
+
+    function setOption (opt) {
+        const formatColorRegex = "^(?:#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(?:rgb|hsl)a?\(\s*\d{1,3}%?(?:\s*,\s*\d{1,3}%?){2}(?:\s*,\s*(?:\d{1,3}%?|0?\.\d+|1))?\s*\))$";
+
+        const optionRule = [
+            {field: "allowClose", type: BOOLEAN, default: true},
+            {field: "backgroundColor", type: STRING, validation: 'regex=>'+formatColorRegex, default: "#fff"},
+            {field: "textColor", type: STRING, validation: 'regex=>'+formatColorRegex, default: "#000"},
+            {field: "textFont", type: STRING, default:'initial'},
+            {field: "exitConfirmation", type: BOOLEAN, default:false},
+            {field: "indicatorAvailable", type: BOOLEAN, default: true},
+            {field: "indicatorColorActive", type: STRING, validation: 'regex=>'+formatColorRegex, default: "#6e6e6e"},
+            {field: "indicatorColor", type: STRING, validation: 'regex=>'+formatColorRegex, default: "#ddd"},
+            {field: "buttonLabel", type:BOOLEAN, default: false},
+        ]
+
+        let option = {};
+
+        optionRule.forEach((item) => {
+            if(typeof opt[item.field] === 'undefined' || typeof opt[item.field] != item.type) {
+                option[item.field] = item.default 
+            } else if('validation' in item) {
+
+                item.validation.split('||').forEach((val) => {
+                    const [typeValidation, valueValidation] = val.split('=>');
+                    switch (typeValidation) {
+                        case 'regex':
+                            const pattern = new RegExp(valueValidation);
+                            if(pattern.test(opt[item.field])) {
+                                option[item.field] = opt[item.field]
+                            }
+                            break;
+                    }
+                });
+
+            } else {
+                option[item.field] = opt[item.field]
+            }
+        })
+
+        return option;
+    }
+    
+    function updateCss(selector, prop, value) {
+        for (let sheet of document.styleSheets) {
+            try {
+                for (let rule of sheet.cssRules || sheet.rules) {
+                    if (rule.selectorText === selector) {
+                        rule.style.setProperty(prop, value);
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn("Unable access external stylesheet: ", sheet.href);
+            }
+        }
+    }
+
+    function hexToRgb(hex) {
+        hex = hex.replace(/^#/, '');
+        if (hex.length === 3) {
+            hex = hex.split('').map(x => x + x).join('');
+        }
+        let bigint = parseInt(hex, 16);
+        return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+    }
+
+    function hslToRgb(h, s, l) {
+        s /= 100;
+        l /= 100;
+        let c = (1 - Math.abs(2 * l - 1)) * s;
+        let x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        let m = l - c / 2;
+        let r = 0, g = 0, b = 0;
+    
+        if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
+        else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
+        else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
+        else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
+        else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
+        else if (h >= 300 && h < 360) { r = c; g = 0; b = x; }
+    
+        return [
+            Math.round((r + m) * 255),
+            Math.round((g + m) * 255),
+            Math.round((b + m) * 255)
+        ];
+    }
+
+    function rgbToFilter(r, g, b) {
+        let invert = 1 - (r + g + b) / (255 * 3);
+        let brightness = (r + g + b) / (255 * 3);
+        let sepia = 1 - brightness;
+    
+        return `invert(${(invert * 100).toFixed(0)}%) brightness(${(brightness * 200).toFixed(0)}%) sepia(${(sepia * 100).toFixed(0)}%);`;
+    }
+
+    function convertColorToFilter(color) {
+        let r, g, b;
+    
+        if (color.startsWith('#')) {
+            [r, g, b] = hexToRgb(color);
+        } else if (color.startsWith('rgb')) {
+            let values = color.match(/\d+/g).map(Number);
+            [r, g, b] = values;
+        } else if (color.startsWith('hsl')) {
+            let values = color.match(/\d+/g).map(Number);
+            [r, g, b] = hslToRgb(values[0], values[1], values[2]);
+        } else {
+            throw new Error('Format warna tidak dikenali');
+        }
+    
+        return rgbToFilter(r, g, b);
     }
 
     window.addEventListener("resize", function () {
