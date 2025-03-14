@@ -246,6 +246,11 @@
             document.getElementById(idTooltipHeader).appendChild(createTag('span', 'gtour-close', ''))
             setContentTag("#gtour-close", "&#x2715;")
         }
+
+        if(_this.option.textFont) {
+            updateCss('.'+idTooltip, 'font-family', _this.option.textFont);
+            updateCss('.gtour-btn', 'font-family', _this.option.textFont);
+        }
         buildButtonFooter()
         adjustmentButton.call(_this)
     }
