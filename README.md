@@ -23,8 +23,20 @@ Add the following script in the `<head>` section or before the closing `<body>` 
 
 Add script inside of `<script>` section
 
+#### 1.1 Without Option
+
 ```javascript
 const tour = new gtourJS()
+```
+
+#### 1.2 Using Option
+
+```javascript
+const tour = new gtourJS({
+    allowClose: false,
+    exitConfirmation: true,
+    backgroundColor: '#ff0'
+})
 ```
 
 ### 2. Create Stages
@@ -49,6 +61,23 @@ Don't forget to run through the steps once you've defined them.
 ```javascript
 tour.run();
 ```
+---
+
+## Configuration Options
+
+You can use the options provided below. Please implement according to your preference.
+
+| Option | Data Type | Default | Description |
+|:-------|:----------|:-------:|:------------|
+| `allowClose` | `boolean` | `true` | Gives the user the option to skip step by step or go all the way to the end |
+| `backgroundColor` | `string` | `#fff` | Color of background's element can change according to your taste.<br>Input using HSL/RGB/HEX color format |
+| `textColor` | `string` | `#000` | Color of text's element can change according to your taste.<br>Input using HSL/RGB/HEX color format |
+| `exitConfirmation` | `boolean` | `false` | Pop up a confirmation when the user is about to exit without completing the step by step |
+| `indicatorAvailable` | `boolean` | `true` | Show or hide indicator |
+| `indicatorColorActive` | `string` | `#6e6e6e` | Color of the active indicator can be changed according to the website theme.<br>Input using HSL/RGB/HEX color format |
+| `indicatorColor` | `string` | `#ddd` | Step-by-step indicator can be changed.<br>Input using HSL/RGB/HEX color format |
+| `buttonLabel` | `boolean` | `false` | Pop up the label on the next or previous button |
+
 
 ---
 
