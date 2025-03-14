@@ -11,8 +11,8 @@
 Add the following script in the `<head>` section or before the closing `<body>` tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/gigihhadiprakoso/gtourjs@release/gtour.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/gigihhadiprakoso/gtourjs@release/gtour.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/gigihhadiprakoso/gtourjs@latest/gtour.min.css" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/gh/gigihhadiprakoso/gtourjs@latest/gtour.min.js"></script>
 ```
 
 ---
