@@ -1,0 +1,43 @@
+{
+  "name": "gtourjs",
+  "version": "1.0.1",
+  "description": "A lightweight JavaScript library for creating beautiful feature tours and onboarding experiences",
+  "main": "dist/gtour.min.js",
+  "style": "dist/gtour.min.css",
+  "files": [
+    "dist/gtour.js",
+    "dist/gtour.min.js",
+    "dist/gtour.css",
+    "dist/gtour.min.css",
+    "dist/icon/"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tour",
+    "guide",
+    "onboarding",
+    "feature-tour",
+    "product-tour",
+    "tutorial",
+    "walkthrough",
+    "javascript",
+    "vanilla-js",
+    "tooltip",
+    "spotlight",
+    "user-guide"
+  ],
+  "author": "Gigih Hadi Prakoso",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gigihhadiprakoso/gtourjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gigihhadiprakoso/gtourjs/issues"
+  },
+  "homepage": "https://github.com/gigihhadiprakoso/gtourjs#readme",
+  "devDependencies": {},
+  "dependencies": {}
+}

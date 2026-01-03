@@ -1,0 +1,33 @@
+# Exclude demo and development files from npm package
+demo/
+node_modules/
+.git/
+.gitignore
+
+# Exclude landing page files
+index.html
+landing.css
+landing.js
+
+# Exclude source files (only include dist)
+src/
+
+# Keep only minified files in dist
+*.map
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test files
+test/
+*.test.js
