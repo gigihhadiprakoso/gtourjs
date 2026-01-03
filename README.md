@@ -2,9 +2,42 @@
 
 **GTourJS** is a lightweight JavaScript library that helps you create interactive guides for new users. With this library, you can highlight important elements in your app and provide hints or descriptions that help users understand the function of each element.
 
+🌐 **[Live Demo & Documentation](https://gtourjs.vercel.app)**
+
+[![NPM Version](https://img.shields.io/npm/v/gtourjs.svg)](https://www.npmjs.com/package/gtourjs)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
+---
+
+## Demo
+
+Check out the interactive demo and full documentation at: **[gtourjs.vercel.app](https://gtourjs.vercel.app)**
+
 ---
 
 ## Installation
+
+### Via NPM
+
+Install gtourJS using npm:
+
+```bash
+npm install gtourjs
+```
+
+Then import in your JavaScript file:
+
+```javascript
+import 'gtourjs/dist/gtour.min.css';
+import 'gtourjs/dist/gtour.min.js';
+```
+
+Or using require:
+
+```javascript
+require('gtourjs/dist/gtour.min.css');
+require('gtourjs/dist/gtour.min.js');
+```
 
 ### Via CDN (jsDelivr)
 
@@ -13,6 +46,15 @@ Add the following script in the `<head>` section or before the closing `<body>` 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/gigihhadiprakoso/gtourjs@latest/gtour.min.css" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/gh/gigihhadiprakoso/gtourjs@latest/gtour.min.js"></script>
+```
+
+### Via Direct Download
+
+Download the files directly from the repository and include them in your project:
+
+```html
+<link rel="stylesheet" href="path/to/gtour.min.css">
+<script src="path/to/gtour.min.js"></script>
 ```
 
 ---
