@@ -505,7 +505,7 @@ function setOption(opt) {
         { field: "allowClose", type: BOOLEAN, default: true },
         { field: "backgroundColor", type: STRING, validation: "regex=>" + formatColorRegex, default: "#fff" },
         { field: "textColor", type: STRING, validation: "regex=>" + formatColorRegex, default: "#000" },
-        { field: "textFont", type: STRING, default: "initial" },
+        { field: "textFont", type: STRING, default: "inherit" },
         { field: "exitConfirmation", type: BOOLEAN, default: false },
         { field: "indicatorAvailable", type: BOOLEAN, default: true },
         { field: "indicatorColorActive", type: STRING, validation: "regex=>" + formatColorRegex, default: "#6e6e6e" },
@@ -519,6 +519,11 @@ function setOption(opt) {
         var value = opt[item.field];
 
         if (typeof value === "undefined" || typeof value !== item.type) {
+            option[item.field] = item.default;
+            return;
+        }
+
+        if (item.field === "textFont" && value.trim() === "") {
             option[item.field] = item.default;
             return;
         }

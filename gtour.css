@@ -29,7 +29,7 @@
     position: absolute;
     z-index: 9503;
     background: white;
-    font-family: initial;
+    font-family: inherit;
 }
 
 .gtour-tooltip-header {
@@ -71,7 +71,7 @@
     cursor: pointer;
     border: transparent;
     color: black;
-    font-family: initial;
+    font-family: inherit;
 }
 
 .position-left {

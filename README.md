@@ -243,7 +243,7 @@ You can use the options provided below. Please implement according to your prefe
 | `allowClose` | `boolean` | `true` | Gives the user the option to skip step by step or go all the way to the end |
 | `backgroundColor` | `string` | `#fff` | Color of background's element can change according to your taste.<br>Input using HSL/RGB/HEX color format |
 | `textColor` | `string` | `#000` | Color of text's element can change according to your taste.<br>Input using HSL/RGB/HEX color format |
-| `textFont` | `string` | `initial` | Font family for the tooltip and button text, e.g. `"Arial, sans-serif"` |
+| `textFont` | `string` | `inherit` | Font family for the tooltip and button text, e.g. `"Arial, sans-serif"`. Defaults to inheriting the application font |
 | `exitConfirmation` | `boolean` | `false` | Pop up a confirmation when the user is about to exit without completing the step by step |
 | `indicatorAvailable` | `boolean` | `true` | Show or hide indicator |
 | `indicatorColorActive` | `string` | `#6e6e6e` | Color of the active indicator can be changed according to the website theme.<br>Input using HSL/RGB/HEX color format |
