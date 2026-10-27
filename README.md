@@ -28,16 +28,18 @@ npm install gtourjs
 Then import in your JavaScript file:
 
 ```javascript
+import gtourJS from 'gtourjs';
 import 'gtourjs/dist/gtour.min.css';
-import 'gtourjs/dist/gtour.min.js';
 ```
 
-Or using require:
+Or using require (with a bundler that supports CSS imports):
 
 ```javascript
+const gtourJS = require('gtourjs');
 require('gtourjs/dist/gtour.min.css');
-require('gtourjs/dist/gtour.min.js');
 ```
+
+The package ships a CommonJS/UMD build (`dist/gtour.min.js`) and an ES module build (`dist/gtour.esm.mjs`), so it works with Node.js, React, Vue, Svelte, and any bundler that supports the `exports` field.
 
 ### Via CDN (jsDelivr)
 
@@ -103,6 +105,133 @@ Don't forget to run through the steps once you've defined them.
 ```javascript
 tour.run();
 ```
+
+### 4. Change Font at Runtime
+
+You can change the tooltip and button font at any time, even while the tour is running, using `setFont`.
+
+```javascript
+tour.setFont("Arial, sans-serif");
+```
+
+The font will also be used for the following steps. To set the font before the tour starts, use the `textFont` option or call `setFont` before `run()`.
+
+### 5. Destroy the Tour
+
+Call `destroy()` to remove the overlay, tooltip, and spotlight. This is useful when a component is unmounted.
+
+```javascript
+tour.destroy();
+```
+
+---
+
+## Framework Usage
+
+gtourJS is SSR-safe. Importing, constructing, and queueing steps never touches the DOM. Only `run()` needs a browser, so call it from a mount/browser lifecycle hook and clean up with `destroy()`.
+
+### React
+
+```jsx
+import { useEffect } from 'react';
+import gtourJS from 'gtourjs';
+import 'gtourjs/dist/gtour.min.css';
+
+export default function App() {
+    useEffect(() => {
+        const tour = new gtourJS({ textFont: 'Inter, sans-serif' });
+
+        tour.queue([
+            { elem: '#target', title: 'Welcome', description: 'Hello!', position: 'bottom' }
+        ]);
+
+        tour.run();
+
+        return () => tour.destroy();
+    }, []);
+
+    return <div id="target">My app</div>;
+}
+```
+
+### Vue
+
+```vue
+<script setup>
+import { onMounted, onBeforeUnmount } from 'vue';
+import gtourJS from 'gtourjs';
+import 'gtourjs/dist/gtour.min.css';
+
+let tour;
+
+onMounted(() => {
+    tour = new gtourJS({ textFont: 'Inter, sans-serif' });
+    tour.queue([
+        { elem: '#target', title: 'Welcome', description: 'Hello!', position: 'bottom' }
+    ]);
+    tour.run();
+});
+
+onBeforeUnmount(() => {
+    if (tour) tour.destroy();
+});
+</script>
+
+<template>
+    <div id="target">My app</div>
+</template>
+```
+
+### Svelte
+
+```svelte
+<script>
+    import { onMount, onDestroy } from 'svelte';
+    import gtourJS from 'gtourjs';
+    import 'gtourjs/dist/gtour.min.css';
+
+    let tour;
+
+    onMount(() => {
+        tour = new gtourJS({ textFont: 'Inter, sans-serif' });
+        tour.queue([
+            { elem: '#target', title: 'Welcome', description: 'Hello!', position: 'bottom' }
+        ]);
+        tour.run();
+    });
+
+    onDestroy(() => {
+        if (tour) tour.destroy();
+    });
+</script>
+
+<div id="target">My app</div>
+```
+
+### Node.js
+
+In a plain Node.js process there is no DOM. Importing and constructing the tour is safe, but `run()` is a no-op that logs a warning. Use it with a DOM implementation such as jsdom, or pass a `document`/`window` explicitly:
+
+```javascript
+const { JSDOM } = require('jsdom');
+const gtourJS = require('gtourjs');
+
+const dom = new JSDOM('<body><div id="target"></div></body>');
+
+const tour = new gtourJS({
+    document: dom.window.document,
+    window: dom.window
+});
+
+tour.queue([
+    { elem: '#target', title: 'Welcome', description: 'Hello!', position: 'bottom' }
+]);
+
+tour.run();
+```
+
+In a server-rendered framework (Next.js, Nuxt, SvelteKit), create and run the tour inside `useEffect`, `onMounted`, or `onMount` so it only executes in the browser.
+
 ---
 
 ## Configuration Options
@@ -114,23 +243,33 @@ You can use the options provided below. Please implement according to your prefe
 | `allowClose` | `boolean` | `true` | Gives the user the option to skip step by step or go all the way to the end |
 | `backgroundColor` | `string` | `#fff` | Color of background's element can change according to your taste.<br>Input using HSL/RGB/HEX color format |
 | `textColor` | `string` | `#000` | Color of text's element can change according to your taste.<br>Input using HSL/RGB/HEX color format |
+| `textFont` | `string` | `initial` | Font family for the tooltip and button text, e.g. `"Arial, sans-serif"` |
 | `exitConfirmation` | `boolean` | `false` | Pop up a confirmation when the user is about to exit without completing the step by step |
 | `indicatorAvailable` | `boolean` | `true` | Show or hide indicator |
 | `indicatorColorActive` | `string` | `#6e6e6e` | Color of the active indicator can be changed according to the website theme.<br>Input using HSL/RGB/HEX color format |
 | `indicatorColor` | `string` | `#ddd` | Step-by-step indicator can be changed.<br>Input using HSL/RGB/HEX color format |
 | `buttonLabel` | `boolean` | `false` | Pop up the label on the next or previous button |
+| `document` | `object` | browser `document` | Optional document override, useful for Node.js/jsdom |
+| `window` | `object` | browser `window` | Optional window override, useful for Node.js/jsdom |
 
 
 ---
 
 ## Browser Support
 
-This library support following modern browser:
+This library supports the following modern browsers:
 
 - Chrome
 - Firefox
 - Edge
-- Safari (still a test run)
+- Safari 12+ (macOS and iOS)
+
+Safari-specific compatibility notes:
+
+- The build targets Safari 12 syntax.
+- Smooth scrolling falls back to `window.scrollTo` when `scrollBehavior` is unavailable, and scroll completion is detected without relying on the `scrollend` event.
+- Indicator spacing uses `gap` with a margin fallback for Safari versions without flex `gap`.
+- The spotlight shadow uses comma-separated `rgba()` for older WebKit engines.
 
 ---
 

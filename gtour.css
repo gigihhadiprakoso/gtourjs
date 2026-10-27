@@ -18,7 +18,7 @@
     z-index: 9502;
     border-radius: 4px;
     position: absolute;
-    box-shadow: rgba(0 0 0 / 0.5) 0 0 0 9999px;
+    box-shadow: rgba(0, 0, 0, 0.5) 0 0 0 9999px;
     transition: all 0.3s ease;
 }
 
@@ -118,10 +118,17 @@ i {
 .gtour-tooltip-item-indicators {
     width: 8px;
     height: 8px;
+    margin: 0 4px;
     background-color: #ddd;
     border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.3s ease;
+}
+
+@supports (gap: 8px) {
+    .gtour-tooltip-item-indicators {
+        margin: 0;
+    }
 }
 
 .gtour-tooltip-item-indicators.active {

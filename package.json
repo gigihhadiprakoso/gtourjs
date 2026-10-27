@@ -1,17 +1,32 @@
 {
   "name": "gtourjs",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "description": "A lightweight JavaScript library for creating beautiful feature tours and onboarding experiences",
   "main": "dist/gtour.min.js",
+  "module": "dist/gtour.esm.mjs",
   "style": "dist/gtour.min.css",
+  "exports": {
+    ".": {
+      "import": "./dist/gtour.esm.mjs",
+      "require": "./dist/gtour.min.js",
+      "default": "./dist/gtour.min.js"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
     "dist/gtour.js",
     "dist/gtour.min.js",
+    "dist/gtour.esm.mjs",
     "dist/gtour.css",
     "dist/gtour.min.css",
     "dist/icon/"
   ],
   "scripts": {
+    "build": "node scripts/build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -38,6 +53,8 @@
     "url": "https://github.com/gigihhadiprakoso/gtourjs/issues"
   },
   "homepage": "https://github.com/gigihhadiprakoso/gtourjs#readme",
-  "devDependencies": {},
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
   "dependencies": {}
 }
