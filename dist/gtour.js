@@ -1,459 +1,549 @@
+(function (root, factory) {
+    if (typeof module === "object" && module.exports) {
+        var lib = factory();
+        module.exports = lib;
+        module.exports.gtourJS = lib;
+        module.exports.default = lib;
+    } else if (typeof define === "function" && define.amd) {
+        define([], factory);
+    } else {
+        root.gtourJS = factory();
+    }
+}(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function () {
+    "use strict";
+
 /**
  * Created by Gigih Hadi Prakoso
- * 
+ *
+ * gtourJS core (framework-agnostic, SSR-safe)
  */
 
-(function () {
+const idSpotElement = "gtour-spot-element";
 
-    const idSpotElement = "gtour-spot-element";
+const idTooltip = "gtour-tooltip";
+const idTooltipHeader = "gtour-tooltip-header";
+const idTooltipBody = "gtour-tooltip-body";
+const idTooltipFooter = "gtour-tooltip-footer";
+const idIndicator = "gtour-tooltip-indicators";
+const idIndicatorItem = "gtour-tooltip-item-indicators";
 
-    const idTooltip = "gtour-tooltip";
-    const idTooltipHeader = "gtour-tooltip-header";
-    const idTooltipBody = "gtour-tooltip-body";
-    const idTooltipFooter = "gtour-tooltip-footer";
-    const idIndicator = "gtour-tooltip-indicators";
-    const idIndicatorItem = "gtour-tooltip-item-indicators";
+const idOverlay = "gtour-overlay";
 
-    const idOverlay = "gtour-overlay";
+const idBtnNext = "btn-next";
+const idBtnPrev = "btn-prev";
 
-    const idBtnNext = "btn-next";
-    const idBtnPrev = "btn-prev";
+const PREV = "Previous";
+const NEXT = "Next";
 
-    const PREV = 'Previous';
-    const NEXT = 'Next';
-    const DONE = 'Finish';
+const BOOLEAN = "boolean";
+const STRING = "string";
 
-    const BOOLEAN = 'boolean'
-    const STRING = 'string';
-
-    var _this;
-
-    this.gtourJS = function (args) {
-        this.body = document.querySelector("body");
-        this.line = [{}];
-        this.elem;
-        this.unit = "px";
-        this.option = setOption(args)
-
-        _this = this
+function gtourJS(args) {
+    if (!(this instanceof gtourJS)) {
+        return new gtourJS(args);
     }
 
-    gtourJS.prototype.queue = function (q) {
-        if (!Array.isArray(q)) console.error("Data type error")
-            (typeof q[0] == 'object' ? '' : console.error("Data type error"))
-        q.forEach(element => { element.elem ? '' : console.error("Element not found") });
+    args = args || {};
 
-        this.line = q
+    this.unit = "px";
+    this.line = [];
+    this.elem = undefined;
+    this.step = undefined;
+    this.body = null;
+    this.option = setOption(args);
+
+    this._doc = args.document || null;
+    this._win = args.window || null;
+    this._resizeHandler = null;
+}
+
+gtourJS.prototype.queue = function (q) {
+    if (!Array.isArray(q)) {
+        console.error("gtourJS: queue() expects an array of steps");
+        return this;
     }
 
-    gtourJS.prototype.run = function () {
-        nextStep.call(this)
-    }
-
-    function nextStep() {
-        if (typeof this.step === 'undefined')
-            this.step = 0
-
-        this.elem = this.line[this.step].elem
-
-        showElement.call(this)
-    }
-
-    function prevStep() {
-        this.elem = this.line[this.step].elem
-
-        showElement.call(this)
-    }
-
-    function exitStep() {
-        destroyElement.call(this)
-    }
-
-    function showElement() {
-        var self = this;
-
-        if (document.getElementById(idSpotElement) === null) 
-            buildSpot.call(self);
-        
-        if (document.getElementById(idTooltip) === null) 
-            buildTooltip.call(self)
-
-        if (document.getElementById(idOverlay) === null) 
-            buildOverlay.call(self)
-
-        adjustmentTooltip();
-        adjustmentSpot();
-        adjustmentButton.call(self)
-    }
-
-    function destroyElement() {
-        delete this.step
-        document.getElementById(idTooltip).remove();
-        document.getElementById(idSpotElement).remove();
-        document.getElementById(idOverlay).remove();
-    }
-
-    const adjustmentSpot = () => {
-        position = getOffsetElement(_this.elem)
-        size = getSizeElement(_this.elem)
-
-        let styles = {
-            ...position,
-            ...size,
+    q.forEach(function (step, index) {
+        if (!step || typeof step !== "object" || !step.elem) {
+            console.error("gtourJS: step at index " + index + " has no 'elem'");
         }
-        Object.entries(styles).forEach(([key, val]) => {
-            styles[key] = val.toString() + _this.unit
-        })
-        applyStyle("#" + idSpotElement, styles)
+    });
+
+    this.line = q;
+    return this;
+};
+
+gtourJS.prototype.run = function () {
+    if (!resolveEnvironment.call(this)) {
+        console.warn("gtourJS: run() requires a DOM environment. Run it in the browser or pass `document` in the options.");
+        return this;
     }
 
-    const adjustmentTooltip = () => {
-        const idContentTooltipHeader = "gtour-content-tooltip-header"
-        const positionTooltip = _this.line[_this.step].position;
-
-        if (document.getElementById(idContentTooltipHeader) === null) {
-            document.getElementById(idTooltipHeader).appendChild(createTag('p', idContentTooltipHeader, idContentTooltipHeader))
-        }
-
-        ctHeader = document.getElementById(idContentTooltipHeader)
-        ctHeader.innerHTML = _this.line[_this.step].title ? _this.line[_this.step].title : "";
-
-        setContentTag("#" + idTooltipBody, _this.line[_this.step].description);
-
-        position = getOffsetElement(_this.elem)
-        sizeElement = getSizeElement(_this.elem)
-        Object.entries(position).forEach(([key, val]) => {
-            position[key] = val.toString() + _this.unit
-        })
-
-        sizeTooltip = getSizeElement("." + idTooltip)
-
-        var y;
-        var x;
-        switch (positionTooltip) {
-            case "top":
-                y = parseInt(sizeElement.height) - (parseInt(sizeElement.height) + parseInt(sizeTooltip.height) + 10)
-                x = 20;
-                break;
-            case "left":
-                y = parseInt(sizeElement.height) * 0.3;
-                x = parseInt(sizeElement.width) - (parseInt(sizeElement.width) + parseInt(sizeTooltip.width) + 10);
-                break;
-            case "right":
-                y = parseInt(sizeElement.height) * 0.3;
-                x = parseInt(sizeElement.width) + 10;
-                break;
-            default:
-                y = parseInt(sizeElement.height) + 10;
-                x = 20;
-                break;
-        }
-
-        let styles = {
-            ...position,
-            transform: "translate(" + x + "px, " + y + "px)"
-        }
-        applyStyle("#" + idTooltip, styles);
-        updateCss('.'+idTooltip, 'color', _this.option.textColor);
+    if (!Array.isArray(this.line) || this.line.length === 0) {
+        console.error("gtourJS: call queue() with at least one step before run()");
+        return this;
     }
 
-    function adjustmentButton() {
-        var self = this
+    this.body = this._doc.body || this._doc.querySelector("body");
+    this.step = 0;
 
-        bPrev = document.getElementById(idBtnPrev)
+    bindResize.call(this);
+    showElement.call(this);
+
+    return this;
+};
+
+gtourJS.prototype.destroy = function () {
+    destroyElement.call(this);
+    return this;
+};
+
+gtourJS.prototype.setFont = function (font) {
+    if (typeof font !== "string" || font.trim() === "") {
+        console.error("gtourJS: setFont() expects a non-empty font family string");
+        return this;
+    }
+
+    this.option.textFont = font;
+
+    if (!resolveEnvironment.call(this)) {
+        return this;
+    }
+
+    var tooltip = this._doc.getElementById(idTooltip);
+    if (tooltip !== null) {
+        tooltip.style.fontFamily = font;
+        forEachElement(this._doc.querySelectorAll(".gtour-btn"), function (btn) {
+            btn.style.fontFamily = font;
+        });
+    }
+
+    return this;
+};
+
+gtourJS.prototype.isActive = function () {
+    return typeof this.step !== "undefined";
+};
+
+function resolveEnvironment() {
+    if (!this._doc && typeof document !== "undefined") {
+        this._doc = document;
+    }
+
+    if (!this._win && typeof window !== "undefined") {
+        this._win = window;
+    }
+
+    return !!(this._doc && typeof this._doc.createElement === "function");
+}
+
+function bindResize() {
+    var self = this;
+
+    if (!this._win || this._resizeHandler) return;
+
+    this._resizeHandler = function () {
+        if (typeof self.step !== "undefined") {
+            showElement.call(self);
+        }
+    };
+
+    this._win.addEventListener("resize", this._resizeHandler);
+}
+
+function unbindResize() {
+    if (this._win && this._resizeHandler) {
+        this._win.removeEventListener("resize", this._resizeHandler);
+        this._resizeHandler = null;
+    }
+}
+
+function showElement() {
+    if (!this._doc) return;
+
+    var step = this.line[this.step];
+    if (!step) return;
+
+    this.elem = step.elem;
+
+    if (this._doc.getElementById(idSpotElement) === null) {
+        buildSpot.call(this);
+    }
+
+    if (this._doc.getElementById(idTooltip) === null) {
+        buildTooltip.call(this);
+    }
+
+    if (this._doc.getElementById(idOverlay) === null) {
+        buildOverlay.call(this);
+    }
+
+    adjustmentTooltip.call(this);
+    adjustmentSpot.call(this);
+    adjustmentButton.call(this);
+}
+
+function destroyElement() {
+    var doc = this._doc;
+
+    delete this.step;
+    this.elem = undefined;
+
+    if (doc) {
+        [idTooltip, idSpotElement, idOverlay].forEach(function (id) {
+            var el = doc.getElementById(id);
+            if (el && el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        });
+    }
+
+    unbindResize.call(this);
+}
+
+function adjustmentSpot() {
+    var position = getOffsetElement(this._doc, this.elem);
+    var size = getSizeElement(this._doc, this.elem);
+    var unit = this.unit;
+
+    applyStyle(this._doc, "#" + idSpotElement, {
+        top: position.top + unit,
+        left: position.left + unit,
+        width: size.width + unit,
+        height: size.height + unit
+    });
+}
+
+function adjustmentTooltip() {
+    var doc = this._doc;
+    var step = this.line[this.step] || {};
+    var unit = this.unit;
+    var idContentTooltipHeader = "gtour-content-tooltip-header";
+
+    if (doc.getElementById(idContentTooltipHeader) === null) {
+        doc.getElementById(idTooltipHeader).appendChild(
+            createTag(doc, "p", idContentTooltipHeader, idContentTooltipHeader)
+        );
+    }
+
+    var ctHeader = doc.getElementById(idContentTooltipHeader);
+    ctHeader.innerHTML = step.title ? step.title : "";
+
+    setContentTag(doc, "#" + idTooltipBody, step.description ? step.description : "");
+
+    var position = getOffsetElement(doc, this.elem);
+    var sizeElement = getSizeElement(doc, this.elem);
+    var sizeTooltip = getSizeElement(doc, "." + idTooltip);
+
+    var y;
+    var x;
+
+    switch (step.position) {
+        case "top":
+            y = parseInt(sizeElement.height) - (parseInt(sizeElement.height) + parseInt(sizeTooltip.height) + 10);
+            x = 20;
+            break;
+        case "left":
+            y = parseInt(sizeElement.height) * 0.3;
+            x = parseInt(sizeElement.width) - (parseInt(sizeElement.width) + parseInt(sizeTooltip.width) + 10);
+            break;
+        case "right":
+            y = parseInt(sizeElement.height) * 0.3;
+            x = parseInt(sizeElement.width) + 10;
+            break;
+        default:
+            y = parseInt(sizeElement.height) + 10;
+            x = 20;
+            break;
+    }
+
+    applyStyle(doc, "#" + idTooltip, {
+        top: position.top + unit,
+        left: position.left + unit,
+        transform: "translate(" + x + "px, " + y + "px)"
+    });
+
+    var tooltip = doc.getElementById(idTooltip);
+    if (tooltip) {
+        tooltip.style.color = this.option.textColor;
+        tooltip.style.backgroundColor = this.option.backgroundColor;
+        tooltip.style.fontFamily = this.option.textFont;
+    }
+}
+
+function adjustmentButton() {
+    var self = this;
+    var doc = this._doc;
+
+    var bPrev = doc.getElementById(idBtnPrev);
+    if (bPrev) {
         if (self.step > 0) {
-            bPrev.onclick = function () { self.step--; prevStep.call(self) }
-            bPrev.style.visibility = 'visible'
+            bPrev.onclick = function () {
+                self.step--;
+                showElement.call(self);
+            };
+            bPrev.style.visibility = "visible";
         } else {
-            bPrev.style.visibility = 'hidden'
+            bPrev.style.visibility = "hidden";
         }
+    }
 
-        bNext = document.getElementById(idBtnNext)
+    var bNext = doc.getElementById(idBtnNext);
+    if (bNext) {
         bNext.onclick = function () {
             if (isDone.call(self, self.step)) {
-                exitStep.call(self)
+                destroyElement.call(self);
             } else {
-                self.step++; nextStep.call(self)
+                self.step++;
+                showElement.call(self);
             }
-        }
+        };
+    }
 
-        if(_this.option.indicatorAvailable) {
-            document.querySelectorAll('[id="'+idIndicatorItem+'"]').forEach((item) => {
-                item.classList.remove('active');
-            })
-    
-            console.log(document.querySelector('[id="'+idIndicatorItem+'"]'))
-            console.log(self)
-            document.querySelector('[id="'+idIndicatorItem+'"][data-index="'+ (self.step+1) +'"]').classList.add('active');
-    
-            updateCss('.'+idIndicatorItem+'.active', 'background-color', _this.option.indicatorColorActive);
-            updateCss('.'+idIndicatorItem, 'background-color', _this.option.indicatorColor);
-        }
+    if (self.option.indicatorAvailable) {
+        forEachElement(doc.querySelectorAll('[id="' + idIndicatorItem + '"]'), function (item) {
+            item.classList.remove("active");
+            item.style.backgroundColor = self.option.indicatorColor;
+        });
 
-        if(_this.option.allowClose) {
-            bClose = document.getElementById("gtour-close");
-            bClose.onclick = function () {
-                if(_this.option.exitConfirmation) {
-                    if(confirm("Are you sure want to exit?") == true)
-                        exitStep.call(self)
-                } else {
-                    exitStep.call(self)
-                }
-            }
+        var active = doc.querySelector('[id="' + idIndicatorItem + '"][data-index="' + (self.step + 1) + '"]');
+        if (active) {
+            active.classList.add("active");
+            active.style.backgroundColor = self.option.indicatorColorActive;
         }
     }
 
-    function adjustmentOverlay() {
-        var self = this
-
-        if(_this.option.allowClose){
-            document.getElementById(idOverlay).onclick = function () {
-                if(_this.option.exitConfirmation) {
-                    if(confirm("Are you sure want to exit?") == true)
-                        exitStep.call(self)
-                } else {
-                    exitStep.call(self)
+    if (self.option.allowClose) {
+        var bClose = doc.getElementById("gtour-close");
+        if (bClose) {
+            bClose.onclick = function () {
+                if (confirmExit.call(self)) {
+                    destroyElement.call(self);
                 }
             };
         }
     }
+}
 
-    const applyStyle = (selector, stylesJSON) => {
-        const s = document.querySelector(selector)
-        Object.entries(stylesJSON).forEach(([key, val]) => { stylesJSON[key] = val.replace(",", "|") })
-        style = JSON.stringify(stylesJSON).replace("{", "").replace("}", "").replaceAll('"', '').replaceAll(",", ";").replaceAll("|", ",");
-        s.setAttribute("style", style);
-    }
+function adjustmentOverlay() {
+    var self = this;
+    var overlay = this._doc.getElementById(idOverlay);
 
-    function buildOverlay() {
-        this.body.appendChild(createTag('div', idOverlay, idOverlay));
-        adjustmentOverlay();
-    }
-
-    function buildSpot() {
-        this.body.appendChild(createTag('div', idSpotElement, idSpotElement))
-    }
-
-    function buildTooltip() {
-        var tooltip = createTag('div', idTooltip, idTooltip)
-
-        tooltip.appendChild(createTag('div', idTooltipHeader, idTooltipHeader))
-        tooltip.appendChild(createTag('div', idTooltipBody, idTooltipBody))
-        tooltip.appendChild(createTag('div', idTooltipFooter, idTooltipFooter))
-        this.body.appendChild(tooltip);
-
-        updateCss('.'+idTooltip, 'background-color', _this.option.backgroundColor);
-
-        if(_this.option.allowClose){
-            document.getElementById(idTooltipHeader).appendChild(createTag('span', 'gtour-close', ''))
-            setContentTag("#gtour-close", "&#x2715;")
-        }
-
-        if(_this.option.textFont) {
-            updateCss('.'+idTooltip, 'font-family', _this.option.textFont);
-            updateCss('.gtour-btn', 'font-family', _this.option.textFont);
-        }
-        buildButtonFooter()
-        adjustmentButton.call(_this)
-    }
-
-    function buildButtonFooter() {
-        btnNext = createTag('button', idBtnNext, idBtnNext + " gtour-btn position-right")
-        btnPrev = createTag('button', idBtnPrev, idBtnPrev + " gtour-btn position-left")
-
-        if(_this.option.buttonLabel) {
-            const label = createTag('span')
-            label.innerHTML = NEXT
-            btnNext.appendChild(label)
-        }
-        btnNext.appendChild(createTag('i', 'icon-btn-next', 'icon-btn-next'));
-        btnPrev.appendChild(createTag('i', 'icon-btn-prev', 'icon-btn-prev'))
-        if(_this.option.buttonLabel) {
-            const label = createTag('span')
-            label.innerHTML = PREV
-            btnPrev.appendChild(label)
-        }
-
-        document.getElementById(idTooltipFooter).appendChild(btnPrev)
-
-        if(_this.option.indicatorAvailable) {
-            var indicators = createTag('div', idIndicator, idIndicator);
-            _this.line.forEach((indicator, idx) => {
-                var itemIndicator = createTag('div', idIndicatorItem, idIndicatorItem);
-                itemIndicator.setAttribute('data-index', idx+1);
-                indicators.appendChild(itemIndicator);
-            })
-    
-            document.getElementById(idTooltipFooter).appendChild(indicators)
-        }
-
-        document.getElementById(idTooltipFooter).appendChild(btnNext)
-
-        if(_this.option.textColor) {
-            updateCss('.gtour-btn', 'color', _this.option.textColor);
-        }
-    }
-
-    const createTag = (tag, id, cl) => {
-        let newElement = document.createElement(tag);        
-
-        if(typeof id != 'undefined')
-            newElement.setAttribute("id", id);
-        if (typeof cl != 'undefined')
-            newElement.setAttribute("class", cl);
-        
-        return newElement;
-    }
-
-    const setContentTag = (idclass, content) => {
-        document.querySelector(idclass).innerHTML = content;
-    }
-
-    const getSizeElement = (selector) => {
-        let element = document.querySelector(selector)
-        sWidth = element.offsetWidth
-        sHeight = element.offsetHeight
-        return { width: sWidth, height: sHeight }
-    }
-
-    const getOffsetElement = (el) => {
-        element = document.querySelector(el)
-        var top = 0, left = 0;
-        do {
-            top += element.offsetTop || 0;
-            left += element.offsetLeft || 0;
-            element = element.offsetParent;
-        } while (element);
-
-        return {
-            top: top,
-            left: left
+    if (overlay && self.option.allowClose) {
+        overlay.onclick = function () {
+            if (confirmExit.call(self)) {
+                destroyElement.call(self);
+            }
         };
     }
+}
 
-    function isDone(currentStep) {
-        return currentStep >= this.line.length - 1;
+function confirmExit() {
+    if (!this.option.exitConfirmation) {
+        return true;
     }
 
-
-    function setOption (opt) {
-        const formatColorRegex = "^(?:#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(?:rgb|hsl)a?\(\s*\d{1,3}%?(?:\s*,\s*\d{1,3}%?){2}(?:\s*,\s*(?:\d{1,3}%?|0?\.\d+|1))?\s*\))$";
-
-        const optionRule = [
-            {field: "allowClose", type: BOOLEAN, default: true},
-            {field: "backgroundColor", type: STRING, validation: 'regex=>'+formatColorRegex, default: "#fff"},
-            {field: "textColor", type: STRING, validation: 'regex=>'+formatColorRegex, default: "#000"},
-            {field: "textFont", type: STRING, default:'initial'},
-            {field: "exitConfirmation", type: BOOLEAN, default:false},
-            {field: "indicatorAvailable", type: BOOLEAN, default: true},
-            {field: "indicatorColorActive", type: STRING, validation: 'regex=>'+formatColorRegex, default: "#6e6e6e"},
-            {field: "indicatorColor", type: STRING, validation: 'regex=>'+formatColorRegex, default: "#ddd"},
-            {field: "buttonLabel", type:BOOLEAN, default: false},
-        ]
-
-        let option = {};
-
-        optionRule.forEach((item) => {
-            if(typeof opt[item.field] === 'undefined' || typeof opt[item.field] != item.type) {
-                option[item.field] = item.default 
-            } else if('validation' in item) {
-
-                item.validation.split('||').forEach((val) => {
-                    const [typeValidation, valueValidation] = val.split('=>');
-                    switch (typeValidation) {
-                        case 'regex':
-                            const pattern = new RegExp(valueValidation);
-                            if(pattern.test(opt[item.field])) {
-                                option[item.field] = opt[item.field]
-                            }
-                            break;
-                    }
-                });
-
-            } else {
-                option[item.field] = opt[item.field]
-            }
-        })
-
-        return option;
+    if (this._win && typeof this._win.confirm === "function") {
+        return this._win.confirm("Are you sure want to exit?");
     }
-    
-    function updateCss(selector, prop, value) {
-        for (let sheet of document.styleSheets) {
-            try {
-                for (let rule of sheet.cssRules || sheet.rules) {
-                    if (rule.selectorText === selector) {
-                        rule.style.setProperty(prop, value);
-                        return;
-                    }
+
+    if (typeof confirm === "function") {
+        return confirm("Are you sure want to exit?");
+    }
+
+    return true;
+}
+
+function buildSpot() {
+    this.body.appendChild(createTag(this._doc, "div", idSpotElement, idSpotElement));
+}
+
+function buildOverlay() {
+    this.body.appendChild(createTag(this._doc, "div", idOverlay, idOverlay));
+    adjustmentOverlay.call(this);
+}
+
+function buildTooltip() {
+    var doc = this._doc;
+    var tooltip = createTag(doc, "div", idTooltip, idTooltip);
+
+    tooltip.style.backgroundColor = this.option.backgroundColor;
+    tooltip.style.color = this.option.textColor;
+    tooltip.style.fontFamily = this.option.textFont;
+
+    tooltip.appendChild(createTag(doc, "div", idTooltipHeader, idTooltipHeader));
+    tooltip.appendChild(createTag(doc, "div", idTooltipBody, idTooltipBody));
+    tooltip.appendChild(createTag(doc, "div", idTooltipFooter, idTooltipFooter));
+
+    this.body.appendChild(tooltip);
+
+    if (this.option.allowClose) {
+        doc.getElementById(idTooltipHeader).appendChild(createTag(doc, "span", "gtour-close", ""));
+        setContentTag(doc, "#gtour-close", "\u2715");
+    }
+
+    buildButtonFooter.call(this);
+    adjustmentButton.call(this);
+}
+
+function buildButtonFooter() {
+    var self = this;
+    var doc = this._doc;
+    var btnNext = createTag(doc, "button", idBtnNext, idBtnNext + " gtour-btn position-right");
+    var btnPrev = createTag(doc, "button", idBtnPrev, idBtnPrev + " gtour-btn position-left");
+
+    if (self.option.buttonLabel) {
+        var labelNext = createTag(doc, "span");
+        labelNext.innerHTML = NEXT;
+        btnNext.appendChild(labelNext);
+    }
+
+    btnNext.appendChild(createTag(doc, "i", "icon-btn-next", "icon-btn-next"));
+    btnPrev.appendChild(createTag(doc, "i", "icon-btn-prev", "icon-btn-prev"));
+
+    if (self.option.buttonLabel) {
+        var labelPrev = createTag(doc, "span");
+        labelPrev.innerHTML = PREV;
+        btnPrev.appendChild(labelPrev);
+    }
+
+    [btnNext, btnPrev].forEach(function (btn) {
+        btn.style.color = self.option.textColor;
+        btn.style.fontFamily = self.option.textFont;
+    });
+
+    doc.getElementById(idTooltipFooter).appendChild(btnPrev);
+
+    if (self.option.indicatorAvailable) {
+        var indicators = createTag(doc, "div", idIndicator, idIndicator);
+
+        self.line.forEach(function (indicator, idx) {
+            var itemIndicator = createTag(doc, "div", idIndicatorItem, idIndicatorItem);
+            itemIndicator.setAttribute("data-index", idx + 1);
+            itemIndicator.style.backgroundColor = self.option.indicatorColor;
+            indicators.appendChild(itemIndicator);
+        });
+
+        doc.getElementById(idTooltipFooter).appendChild(indicators);
+    }
+
+    doc.getElementById(idTooltipFooter).appendChild(btnNext);
+}
+
+function createTag(doc, tag, id, cl) {
+    var newElement = doc.createElement(tag);
+
+    if (typeof id !== "undefined") {
+        newElement.setAttribute("id", id);
+    }
+
+    if (typeof cl !== "undefined") {
+        newElement.setAttribute("class", cl);
+    }
+
+    return newElement;
+}
+
+function setContentTag(doc, selector, content) {
+    var el = doc.querySelector(selector);
+    if (el) {
+        el.innerHTML = content;
+    }
+}
+
+function applyStyle(doc, selector, styles) {
+    var el = doc.querySelector(selector);
+    if (!el) return;
+
+    Object.keys(styles).forEach(function (key) {
+        el.style[key] = styles[key];
+    });
+}
+
+function forEachElement(list, callback) {
+    for (var i = 0; i < list.length; i++) {
+        callback(list[i], i);
+    }
+}
+
+function getSizeElement(doc, selector) {
+    var element = doc.querySelector(selector);
+
+    return {
+        width: element ? element.offsetWidth : 0,
+        height: element ? element.offsetHeight : 0
+    };
+}
+
+function getOffsetElement(doc, selector) {
+    var element = doc.querySelector(selector);
+    var top = 0;
+    var left = 0;
+
+    while (element) {
+        top += element.offsetTop || 0;
+        left += element.offsetLeft || 0;
+        element = element.offsetParent;
+    }
+
+    return {
+        top: top,
+        left: left
+    };
+}
+
+function isDone(currentStep) {
+    return currentStep >= this.line.length - 1;
+}
+
+function setOption(opt) {
+    opt = opt || {};
+
+    const formatColorRegex = "^(?:#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(?:rgb|hsl)a?\\(\\s*\\d{1,3}%?(?:\\s*,\\s*\\d{1,3}%?){2}(?:\\s*,\\s*(?:\\d{1,3}%?|0?\\.\\d+|1))?\\s*\\))$";
+
+    const optionRule = [
+        { field: "allowClose", type: BOOLEAN, default: true },
+        { field: "backgroundColor", type: STRING, validation: "regex=>" + formatColorRegex, default: "#fff" },
+        { field: "textColor", type: STRING, validation: "regex=>" + formatColorRegex, default: "#000" },
+        { field: "textFont", type: STRING, default: "initial" },
+        { field: "exitConfirmation", type: BOOLEAN, default: false },
+        { field: "indicatorAvailable", type: BOOLEAN, default: true },
+        { field: "indicatorColorActive", type: STRING, validation: "regex=>" + formatColorRegex, default: "#6e6e6e" },
+        { field: "indicatorColor", type: STRING, validation: "regex=>" + formatColorRegex, default: "#ddd" },
+        { field: "buttonLabel", type: BOOLEAN, default: false }
+    ];
+
+    var option = {};
+
+    optionRule.forEach(function (item) {
+        var value = opt[item.field];
+
+        if (typeof value === "undefined" || typeof value !== item.type) {
+            option[item.field] = item.default;
+            return;
+        }
+
+        if ("validation" in item) {
+            var valid = false;
+
+            item.validation.split("||").forEach(function (val) {
+                var parts = val.split("=>");
+                var typeValidation = parts[0];
+                var valueValidation = parts[1];
+
+                if (typeValidation === "regex" && new RegExp(valueValidation).test(value)) {
+                    valid = true;
                 }
-            } catch (err) {
-                console.warn("Unable access external stylesheet: ", sheet.href);
-            }
-        }
-    }
+            });
 
-    function hexToRgb(hex) {
-        hex = hex.replace(/^#/, '');
-        if (hex.length === 3) {
-            hex = hex.split('').map(x => x + x).join('');
-        }
-        let bigint = parseInt(hex, 16);
-        return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
-    }
-
-    function hslToRgb(h, s, l) {
-        s /= 100;
-        l /= 100;
-        let c = (1 - Math.abs(2 * l - 1)) * s;
-        let x = c * (1 - Math.abs((h / 60) % 2 - 1));
-        let m = l - c / 2;
-        let r = 0, g = 0, b = 0;
-    
-        if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
-        else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
-        else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
-        else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
-        else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
-        else if (h >= 300 && h < 360) { r = c; g = 0; b = x; }
-    
-        return [
-            Math.round((r + m) * 255),
-            Math.round((g + m) * 255),
-            Math.round((b + m) * 255)
-        ];
-    }
-
-    function rgbToFilter(r, g, b) {
-        let invert = 1 - (r + g + b) / (255 * 3);
-        let brightness = (r + g + b) / (255 * 3);
-        let sepia = 1 - brightness;
-    
-        return `invert(${(invert * 100).toFixed(0)}%) brightness(${(brightness * 200).toFixed(0)}%) sepia(${(sepia * 100).toFixed(0)}%);`;
-    }
-
-    function convertColorToFilter(color) {
-        let r, g, b;
-    
-        if (color.startsWith('#')) {
-            [r, g, b] = hexToRgb(color);
-        } else if (color.startsWith('rgb')) {
-            let values = color.match(/\d+/g).map(Number);
-            [r, g, b] = values;
-        } else if (color.startsWith('hsl')) {
-            let values = color.match(/\d+/g).map(Number);
-            [r, g, b] = hslToRgb(values[0], values[1], values[2]);
+            option[item.field] = valid ? value : item.default;
         } else {
-            throw new Error('Format warna tidak dikenali');
+            option[item.field] = value;
         }
-    
-        return rgbToFilter(r, g, b);
-    }
+    });
 
-    window.addEventListener("resize", function () {
-        if (typeof _this.step !== 'undefined') {
-            showElement.call(_this)
-        }
-    })
+    return option;
+}
 
-}());
+    return gtourJS;
+}));
